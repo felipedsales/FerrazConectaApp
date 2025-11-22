@@ -4,8 +4,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ListAlt
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.ListAlt
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -33,7 +33,7 @@ fun HomeScreen(homeViewModel: HomeViewModel = viewModel()) {
     val vagas by homeViewModel.vagas.collectAsState()
     var selectedItem by remember { mutableStateOf(0) }
     val items = listOf("Vagas", "Candidaturas", "Perfil")
-    val icons = listOf(Icons.Filled.Home, Icons.Filled.ListAlt, Icons.Filled.Person)
+    val icons = listOf(Icons.Filled.Home, Icons.AutoMirrored.Filled.ListAlt, Icons.Filled.Person)
 
     Scaffold(
         topBar = {
