@@ -1,6 +1,5 @@
 package com.example.ferrazconectaapp.ui.screens
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,6 +12,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BusinessCenter
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
@@ -34,6 +34,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.ferrazconectaapp.ui.theme.FerrazConectaAppTheme
 import com.example.ferrazconectaapp.ui.viewmodels.LoginViewModel
 
 @Composable
@@ -59,10 +60,11 @@ fun LoginScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // 1. Logo
-        Image(
-            painter = painterResource(id = android.R.drawable.ic_dialog_info), // Imagem de exemplo
+        Icon(
+            imageVector = Icons.Filled.BusinessCenter,
             contentDescription = "Logo Ferraz Conecta",
-            modifier = Modifier.size(120.dp)
+            modifier = Modifier.size(120.dp),
+            tint = MaterialTheme.colorScheme.primary
         )
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -163,5 +165,7 @@ fun LoginScreen(
 @Preview(showBackground = true)
 @Composable
 fun LoginScreenPreview() {
-    LoginScreen(onNavigateToCadastro = {}, onLoginSuccess = {})
+    FerrazConectaAppTheme {
+        LoginScreen(onNavigateToCadastro = {}, onLoginSuccess = {})
+    }
 }

@@ -22,7 +22,7 @@ fun VagaListItem(vaga: Vaga, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
+            .padding(horizontal = 16.dp, vertical = 8.dp),
         onClick = onClick
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
