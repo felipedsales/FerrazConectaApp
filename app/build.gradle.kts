@@ -1,16 +1,17 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.compose)
 }
 
 android {
     namespace = "com.example.ferrazconectaapp"
-    compileSdk = 34
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.ferrazconectaapp"
         minSdk = 24
-        targetSdk = 34
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 
@@ -52,9 +53,7 @@ android {
 dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
-    // implementation(libs.material) // Replaced by Compose Material3
-    // implementation(libs.androidx.activity) // Replaced by activity-compose
-    // implementation(libs.androidx.constraintlayout) // Not needed for Compose
+    implementation(libs.material)
 
     // Jetpack Compose BOM
     val composeBom = platform("androidx.compose:compose-bom:2024.05.00")
@@ -66,6 +65,7 @@ dependencies {
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.material:material-icons-extended") // Adicionando a biblioteca de ícones estendidos
 
     // Activity & Navigation Compose
     implementation("androidx.activity:activity-compose:1.9.0")

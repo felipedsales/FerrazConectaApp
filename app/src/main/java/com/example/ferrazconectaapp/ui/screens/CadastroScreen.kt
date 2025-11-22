@@ -19,7 +19,6 @@ import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -76,7 +75,7 @@ fun CadastroScreen(
             verticalArrangement = Arrangement.Center
         ) {
             Image(
-                painter = painterResource(id = android.R.drawable.ic_dialog_info),
+                painter = painterResource(id = android.R.drawable.ic_dialog_info), // Imagem de exemplo
                 contentDescription = "Logo Ferraz Conecta",
                 modifier = Modifier.size(80.dp)
             )

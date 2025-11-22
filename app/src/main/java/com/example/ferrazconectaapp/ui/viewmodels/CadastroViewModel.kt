@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.asStateFlow
 
 class CadastroViewModel : ViewModel() {
 
-    // Form fields state
+    // Estado dos campos do formulário
     var nome by mutableStateOf("")
         private set
     var email by mutableStateOf("")
@@ -26,13 +26,13 @@ class CadastroViewModel : ViewModel() {
     var confirmarSenha by mutableStateOf("")
         private set
 
-    // Validation error state
+    // Estado de erro de validação
     var emailError by mutableStateOf<String?>(null)
         private set
     var confirmarSenhaError by mutableStateOf<String?>(null)
         private set
 
-    // Overall form validity state
+    // Estado de validade geral do formulário
     var isFormValid by mutableStateOf(false)
         private set
 

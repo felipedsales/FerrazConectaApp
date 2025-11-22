@@ -60,7 +60,7 @@ fun LoginScreen(
     ) {
         // 1. Logo
         Image(
-            painter = painterResource(id = android.R.drawable.ic_dialog_info), // Placeholder
+            painter = painterResource(id = android.R.drawable.ic_dialog_info), // Imagem de exemplo
             contentDescription = "Logo Ferraz Conecta",
             modifier = Modifier.size(120.dp)
         )
@@ -102,7 +102,7 @@ fun LoginScreen(
 
         // 5. Esqueci minha senha
         TextButton(
-            onClick = { /* TODO */ },
+            onClick = { /* FAZER */ },
             modifier = Modifier.align(Alignment.End)
         ) {
             Text("Esqueci minha senha?")
@@ -124,12 +124,12 @@ fun LoginScreen(
 
         // 8. Login Social
         OutlinedButton(
-            onClick = { /* TODO */ },
+            onClick = { /* FAZER */ },
             modifier = Modifier.fillMaxWidth()
         ) {
             Icon(
-                painter = painterResource(id = android.R.drawable.ic_menu_myplaces), // Placeholder
-                contentDescription = "Google Icon",
+                painter = painterResource(id = android.R.drawable.ic_menu_myplaces), // Imagem de exemplo
+                contentDescription = "Ícone do Google",
                 modifier = Modifier.size(24.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
@@ -137,12 +137,12 @@ fun LoginScreen(
         }
         Spacer(modifier = Modifier.height(8.dp))
         OutlinedButton(
-            onClick = { /* TODO */ },
+            onClick = { /* FAZER */ },
             modifier = Modifier.fillMaxWidth()
         ) {
             Icon(
-                painter = painterResource(id = android.R.drawable.ic_menu_share), // Placeholder
-                contentDescription = "LinkedIn Icon",
+                painter = painterResource(id = android.R.drawable.ic_menu_share), // Imagem de exemplo
+                contentDescription = "Ícone do LinkedIn",
                 modifier = Modifier.size(24.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
