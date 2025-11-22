@@ -5,6 +5,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 class CadastroViewModel : ViewModel() {
 
@@ -33,6 +35,9 @@ class CadastroViewModel : ViewModel() {
     // Overall form validity state
     var isFormValid by mutableStateOf(false)
         private set
+
+    private val _cadastroSuccess = MutableStateFlow(false)
+    val cadastroSuccess = _cadastroSuccess.asStateFlow()
 
     fun onNomeChange(newName: String) {
         nome = newName
@@ -104,5 +109,11 @@ class CadastroViewModel : ViewModel() {
                       telefone.length == 11 && 
                       isEmailFieldValid && 
                       arePasswordsValid
+    }
+
+    fun onCadastroClick() {
+        if(isFormValid) {
+            _cadastroSuccess.value = true
+        }
     }
 }

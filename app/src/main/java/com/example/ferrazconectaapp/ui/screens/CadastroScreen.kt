@@ -24,6 +24,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -43,6 +44,13 @@ fun CadastroScreen(
     onNavigateBack: () -> Unit,
     cadastroViewModel: CadastroViewModel = viewModel()
 ) {
+    val cadastroSuccess = cadastroViewModel.cadastroSuccess
+    LaunchedEffect(cadastroSuccess) {
+        if (cadastroSuccess.value) {
+            onNavigateBack()
+        }
+    }
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -159,7 +167,7 @@ fun CadastroScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             Button(
-                onClick = { /* TODO: Cadastro logic */ },
+                onClick = { cadastroViewModel.onCadastroClick() },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = cadastroViewModel.isFormValid
             ) {

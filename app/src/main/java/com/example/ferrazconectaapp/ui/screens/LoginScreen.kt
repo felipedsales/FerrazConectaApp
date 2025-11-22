@@ -24,6 +24,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -38,8 +39,18 @@ import com.example.ferrazconectaapp.ui.viewmodels.LoginViewModel
 @Composable
 fun LoginScreen(
     onNavigateToCadastro: () -> Unit,
+    onLoginSuccess: () -> Unit, // Callback para navegar após login bem-sucedido
     loginViewModel: LoginViewModel = viewModel()
 ) {
+
+    // Observa o estado de sucesso do login
+    val loginSuccess = loginViewModel.loginSuccess
+    LaunchedEffect(loginSuccess) {
+        if (loginSuccess.value) {
+            onLoginSuccess()
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -100,7 +111,7 @@ fun LoginScreen(
 
         // 6. Botão Entrar
         Button(
-            onClick = { /* TODO: Login logic */ },
+            onClick = { loginViewModel.onLoginClick() }, // Chama a função de login
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Entrar")
@@ -152,5 +163,5 @@ fun LoginScreen(
 @Preview(showBackground = true)
 @Composable
 fun LoginScreenPreview() {
-    LoginScreen(onNavigateToCadastro = {})
+    LoginScreen(onNavigateToCadastro = {}, onLoginSuccess = {})
 }

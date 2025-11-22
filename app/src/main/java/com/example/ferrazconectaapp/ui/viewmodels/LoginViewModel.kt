@@ -4,6 +4,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 class LoginViewModel : ViewModel() {
     var email by mutableStateOf("")
@@ -15,6 +17,9 @@ class LoginViewModel : ViewModel() {
     var passwordVisible by mutableStateOf(false)
         private set
 
+    private val _loginSuccess = MutableStateFlow(false)
+    val loginSuccess = _loginSuccess.asStateFlow()
+
     fun onEmailChange(newEmail: String) {
         email = newEmail
     }
@@ -25,5 +30,12 @@ class LoginViewModel : ViewModel() {
 
     fun togglePasswordVisibility() {
         passwordVisible = !passwordVisible
+    }
+
+    fun onLoginClick() {
+        // Lógica de login simulada
+        if (email.isNotBlank() && password.isNotBlank()) {
+            _loginSuccess.value = true
+        }
     }
 }
