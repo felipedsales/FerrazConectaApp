@@ -34,6 +34,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.ferrazconectaapp.R
 import com.example.ferrazconectaapp.ui.theme.FerrazConectaAppTheme
 import com.example.ferrazconectaapp.ui.viewmodels.LoginViewModel
 
@@ -55,7 +56,7 @@ fun LoginScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(32.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -63,14 +64,14 @@ fun LoginScreen(
         Icon(
             imageVector = Icons.Filled.BusinessCenter,
             contentDescription = "Logo Ferraz Conecta",
-            modifier = Modifier.size(120.dp),
+            modifier = Modifier.size(150.dp),
             tint = MaterialTheme.colorScheme.primary
         )
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(32.dp))
 
         // 2. Título
-        Text(text = "Login", style = MaterialTheme.typography.headlineMedium)
-        Spacer(modifier = Modifier.height(16.dp))
+        Text(text = "Login", style = MaterialTheme.typography.headlineLarge)
+        Spacer(modifier = Modifier.height(24.dp))
 
         // 3. E-mail
         OutlinedTextField(
@@ -81,7 +82,7 @@ fun LoginScreen(
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
             singleLine = true
         )
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         // 4. Senha
         OutlinedTextField(
@@ -109,7 +110,7 @@ fun LoginScreen(
         ) {
             Text("Esqueci minha senha?")
         }
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
         // 6. Botão Entrar
         Button(
@@ -118,37 +119,36 @@ fun LoginScreen(
         ) {
             Text("Entrar")
         }
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
         // 7. Separador
-        Text("ou")
-        Spacer(modifier = Modifier.height(16.dp))
+        Text("ou entre com")
+        Spacer(modifier = Modifier.height(24.dp))
 
         // 8. Login Social
-        OutlinedButton(
-            onClick = { /* FAZER */ },
-            modifier = Modifier.fillMaxWidth()
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
         ) {
-            Icon(
-                painter = painterResource(id = android.R.drawable.ic_menu_myplaces), // Imagem de exemplo
-                contentDescription = "Ícone do Google",
-                modifier = Modifier.size(24.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text("Entrar com Google")
-        }
-        Spacer(modifier = Modifier.height(8.dp))
-        OutlinedButton(
-            onClick = { /* FAZER */ },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Icon(
-                painter = painterResource(id = android.R.drawable.ic_menu_share), // Imagem de exemplo
-                contentDescription = "Ícone do LinkedIn",
-                modifier = Modifier.size(24.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text("Entrar com LinkedIn")
+            OutlinedButton(
+                onClick = { /* FAZER */ },
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_launcher_background), // Imagem de exemplo
+                    contentDescription = "Ícone do Google",
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+            Spacer(modifier = Modifier.width(16.dp))
+            OutlinedButton(
+                onClick = { /* FAZER */ },
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_launcher_background), // Imagem de exemplo
+                    contentDescription = "Ícone do LinkedIn",
+                    modifier = Modifier.size(24.dp)
+                )
+            }
         }
         Spacer(modifier = Modifier.weight(1f))
 

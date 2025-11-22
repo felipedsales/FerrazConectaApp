@@ -7,11 +7,13 @@ import androidx.navigation.compose.rememberNavController
 import com.example.ferrazconectaapp.ui.screens.CadastroScreen
 import com.example.ferrazconectaapp.ui.screens.HomeScreen
 import com.example.ferrazconectaapp.ui.screens.LoginScreen
+import com.example.ferrazconectaapp.ui.screens.ProfileScreen
 
 object Routes {
     const val LOGIN = "login"
     const val CADASTRO = "cadastro"
     const val HOME = "home"
+    const val PERFIL = "perfil"
 }
 
 @Composable
@@ -31,7 +33,10 @@ fun AppNavigation() {
             )
         }
         composable(Routes.HOME) {
-            HomeScreen()
+            HomeScreen(navController = navController)
+        }
+        composable(Routes.PERFIL) {
+            ProfileScreen(navController = navController)
         }
     }
 }
