@@ -61,8 +61,9 @@ fun HomeScreen(homeViewModel: HomeViewModel = viewModel(), navController: NavCon
                         selected = selectedItem == index,
                         onClick = { 
                             selectedItem = index
-                            if (item == "Perfil") {
-                                navController.navigate(Routes.PERFIL)
+                            when (item) {
+                                "Perfil" -> navController.navigate(Routes.PERFIL)
+                                "Candidaturas" -> navController.navigate(Routes.CANDIDATURAS)
                             }
                         },
                         colors = NavigationBarItemDefaults.colors(
@@ -79,7 +80,7 @@ fun HomeScreen(homeViewModel: HomeViewModel = viewModel(), navController: NavCon
     ) { paddingValues ->
         LazyColumn(modifier = Modifier.padding(paddingValues)) {
             items(vagas) { vaga ->
-                VagaListItem(vaga = vaga, onClick = { /* FAZER: Navegar para detalhes da vaga */ })
+                VagaListItem(vaga = vaga, onClick = { navController.navigate(Routes.createVagaDetailsRoute(vaga.id)) })
             }
         }
     }

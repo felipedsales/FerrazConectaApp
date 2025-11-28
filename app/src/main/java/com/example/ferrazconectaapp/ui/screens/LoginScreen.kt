@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.BusinessCenter
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -27,14 +28,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.ferrazconectaapp.R
 import com.example.ferrazconectaapp.ui.theme.FerrazConectaAppTheme
 import com.example.ferrazconectaapp.ui.viewmodels.LoginViewModel
 
@@ -134,8 +133,8 @@ fun LoginScreen(
                 onClick = { /* FAZER */ },
             ) {
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_launcher_background), // Imagem de exemplo
-                    contentDescription = "Ícone do Google",
+                    imageVector = Icons.Filled.AccountCircle, 
+                    contentDescription = "Login com Google",
                     modifier = Modifier.size(24.dp)
                 )
             }
@@ -144,8 +143,8 @@ fun LoginScreen(
                 onClick = { /* FAZER */ },
             ) {
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_launcher_background), // Imagem de exemplo
-                    contentDescription = "Ícone do LinkedIn",
+                    imageVector = Icons.Filled.AccountCircle,
+                    contentDescription = "Login com LinkedIn",
                     modifier = Modifier.size(24.dp)
                 )
             }
