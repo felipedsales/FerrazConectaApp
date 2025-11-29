@@ -1,55 +1,85 @@
 package com.example.ferrazconectaapp.ui.screens
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
+import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.BusinessCenter
 import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.ferrazconectaapp.data.repository.AuthRepository
+import com.example.ferrazconectaapp.ui.theme.FerrazConectaAppTheme
 import com.example.ferrazconectaapp.ui.util.CpfVisualTransformation
 import com.example.ferrazconectaapp.ui.util.DateVisualTransformation
 import com.example.ferrazconectaapp.ui.util.PhoneVisualTransformation
+import com.example.ferrazconectaapp.ui.viewmodels.CadastroUiState
 import com.example.ferrazconectaapp.ui.viewmodels.CadastroViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CadastroScreen(
     onNavigateBack: () -> Unit,
-    cadastroViewModel: CadastroViewModel = viewModel()
+    cadastroViewModel: CadastroViewModel = hiltViewModel()
 ) {
-    val cadastroSuccess = cadastroViewModel.cadastroSuccess
-    LaunchedEffect(cadastroSuccess) {
-        if (cadastroSuccess.value) {
-            onNavigateBack()
+    val uiState by cadastroViewModel.uiState.collectAsState()
+    val context = LocalContext.current
+
+    LaunchedEffect(uiState) {
+        when (val state = uiState) {
+            is CadastroUiState.Success -> {
+                Toast.makeText(context, "Cadastro realizado com sucesso!", Toast.LENGTH_SHORT).show()
+                onNavigateBack()
+                cadastroViewModel.resetUiState()
+            }
+            is CadastroUiState.Error -> {
+                Toast.makeText(context, state.message, Toast.LENGTH_LONG).show()
+                cadastroViewModel.resetUiState()
+            }
+            is CadastroUiState.Idle -> {}
         }
     }
 
+    CadastroScreenContent(
+        onNavigateBack = onNavigateBack,
+        viewModel = cadastroViewModel,
+        onCadastroClick = { cadastroViewModel.onCadastroClick() }
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CadastroScreenContent(
+    onNavigateBack: () -> Unit,
+    viewModel: CadastroViewModel,
+    onCadastroClick: () -> Unit
+) {
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -71,107 +101,112 @@ fun CadastroScreen(
                 .padding(paddingValues)
                 .padding(16.dp)
                 .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Image(
-                painter = painterResource(id = android.R.drawable.ic_dialog_info), // Imagem de exemplo
+            Icon(
+                imageVector = Icons.Default.BusinessCenter,
                 contentDescription = "Logo Ferraz Conecta",
-                modifier = Modifier.size(80.dp)
+                modifier = Modifier.padding(bottom = 16.dp), 
+                tint = MaterialTheme.colorScheme.primary
             )
-            Spacer(modifier = Modifier.height(16.dp))
 
             OutlinedTextField(
-                value = cadastroViewModel.nome,
-                onValueChange = { cadastroViewModel.onNomeChange(it) },
+                value = viewModel.nome.value,
+                onValueChange = viewModel::onNomeChange,
                 label = { Text("Nome Completo") },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true
+                modifier = Modifier.fillMaxWidth().onFocusChanged { if (!it.isFocused) viewModel.validateNome() },
+                singleLine = true,
+                isError = viewModel.nome.error != null,
+                supportingText = { viewModel.nome.error?.let { Text(it) } }
             )
             Spacer(modifier = Modifier.height(8.dp))
 
             OutlinedTextField(
-                value = cadastroViewModel.email,
-                onValueChange = { cadastroViewModel.onEmailChange(it) },
+                value = viewModel.email.value,
+                onValueChange = viewModel::onEmailChange,
                 label = { Text("E-mail") },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().onFocusChanged { if (!it.isFocused) viewModel.validateEmail() },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 singleLine = true,
-                isError = cadastroViewModel.emailError != null,
-                supportingText = { 
-                    cadastroViewModel.emailError?.let { Text(it) } 
-                }
+                isError = viewModel.email.error != null,
+                supportingText = { viewModel.email.error?.let { Text(it) } }
             )
             Spacer(modifier = Modifier.height(8.dp))
 
             OutlinedTextField(
-                value = cadastroViewModel.cpf,
-                onValueChange = { cadastroViewModel.onCpfChange(it) },
+                value = viewModel.cpf.value,
+                onValueChange = viewModel::onCpfChange,
                 label = { Text("CPF") },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().onFocusChanged { if (!it.isFocused) viewModel.validateCpf() },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 singleLine = true,
+                isError = viewModel.cpf.error != null,
+                supportingText = { viewModel.cpf.error?.let { Text(it) } },
                 visualTransformation = CpfVisualTransformation()
             )
             Spacer(modifier = Modifier.height(8.dp))
 
             OutlinedTextField(
-                value = cadastroViewModel.dataNascimento,
-                onValueChange = { cadastroViewModel.onDataNascimentoChange(it) },
+                value = viewModel.dataNascimento.value,
+                onValueChange = viewModel::onDataNascimentoChange,
                 label = { Text("Data de Nascimento") },
                 placeholder = { Text("DD/MM/AAAA") },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().onFocusChanged { if (!it.isFocused) viewModel.validateDataNascimento() },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 singleLine = true,
+                isError = viewModel.dataNascimento.error != null,
+                supportingText = { viewModel.dataNascimento.error?.let { Text(it) } },
                 visualTransformation = DateVisualTransformation()
             )
             Spacer(modifier = Modifier.height(8.dp))
 
             OutlinedTextField(
-                value = cadastroViewModel.telefone,
-                onValueChange = { cadastroViewModel.onTelefoneChange(it) },
+                value = viewModel.telefone.value,
+                onValueChange = viewModel::onTelefoneChange,
                 label = { Text("Telefone") },
                 placeholder = { Text("(11) 99999-9999") },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().onFocusChanged { if (!it.isFocused) viewModel.validateTelefone() },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                 singleLine = true,
+                isError = viewModel.telefone.error != null,
+                supportingText = { viewModel.telefone.error?.let { Text(it) } },
                 visualTransformation = PhoneVisualTransformation()
             )
             Spacer(modifier = Modifier.height(8.dp))
 
             OutlinedTextField(
-                value = cadastroViewModel.senha,
-                onValueChange = { cadastroViewModel.onSenhaChange(it) },
+                value = viewModel.senha.value,
+                onValueChange = viewModel::onSenhaChange,
                 label = { Text("Senha") },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().onFocusChanged { if (!it.isFocused) viewModel.validateSenha() },
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                singleLine = true
+                singleLine = true,
+                isError = viewModel.senha.error != null,
+                supportingText = { viewModel.senha.error?.let { Text(it) } }
             )
             Spacer(modifier = Modifier.height(8.dp))
 
             OutlinedTextField(
-                value = cadastroViewModel.confirmarSenha,
-                onValueChange = { cadastroViewModel.onConfirmarSenhaChange(it) },
+                value = viewModel.confirmarSenha.value,
+                onValueChange = viewModel::onConfirmarSenhaChange,
                 label = { Text("Confirmar Senha") },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().onFocusChanged { if (!it.isFocused) viewModel.validateSenha() },
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 singleLine = true,
-                isError = cadastroViewModel.confirmarSenhaError != null,
-                supportingText = { 
-                    cadastroViewModel.confirmarSenhaError?.let { Text(it) } 
-                }
+                isError = viewModel.confirmarSenha.error != null,
+                supportingText = { viewModel.confirmarSenha.error?.let { Text(it) } }
             )
             Spacer(modifier = Modifier.height(24.dp))
 
             Button(
-                onClick = { cadastroViewModel.onCadastroClick() },
-                modifier = Modifier.fillMaxWidth(),
-                enabled = cadastroViewModel.isFormValid
+                onClick = onCadastroClick,
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Cadastrar")
             }
+            Spacer(modifier = Modifier.weight(1f))
         }
     }
 }
@@ -179,5 +214,12 @@ fun CadastroScreen(
 @Preview(showBackground = true)
 @Composable
 fun CadastroScreenPreview() {
-    CadastroScreen(onNavigateBack = {})
+    FerrazConectaAppTheme {
+        val fakeAuthRepository = AuthRepository()
+        CadastroScreenContent(
+            onNavigateBack = {},
+            viewModel = CadastroViewModel(fakeAuthRepository),
+            onCadastroClick = {}
+        )
+    }
 }

@@ -1,5 +1,6 @@
 package com.example.ferrazconectaapp.ui.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -26,32 +27,65 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.ferrazconectaapp.ui.theme.FerrazConectaAppTheme
+import com.example.ferrazconectaapp.ui.viewmodels.LoginUiState
 import com.example.ferrazconectaapp.ui.viewmodels.LoginViewModel
 
 @Composable
 fun LoginScreen(
     onNavigateToCadastro: () -> Unit,
-    onLoginSuccess: () -> Unit, // Callback para navegar após login bem-sucedido
-    loginViewModel: LoginViewModel = viewModel()
+    onLoginSuccess: () -> Unit,
+    onNavigateToForgotPassword: () -> Unit,
+    loginViewModel: LoginViewModel = hiltViewModel()
 ) {
+    val uiState by loginViewModel.uiState.collectAsState()
+    val context = LocalContext.current
 
-    // Observa o estado de sucesso do login
-    val loginSuccess = loginViewModel.loginSuccess
-    LaunchedEffect(loginSuccess) {
-        if (loginSuccess.value) {
-            onLoginSuccess()
+    LaunchedEffect(uiState) {
+        when (val state = uiState) {
+            is LoginUiState.Success -> {
+                val provider = state.provider
+                val message = if (provider != null) {
+                    "Login com $provider bem-sucedido!"
+                } else {
+                    "Login bem-sucedido!"
+                }
+                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                onLoginSuccess()
+                loginViewModel.resetLoginState()
+            }
+            is LoginUiState.Error -> {
+                Toast.makeText(context, state.message, Toast.LENGTH_LONG).show()
+                loginViewModel.resetLoginState()
+            }
+            is LoginUiState.Idle -> {}
         }
     }
 
+    LoginScreenContent(
+        onNavigateToCadastro = onNavigateToCadastro,
+        onNavigateToForgotPassword = onNavigateToForgotPassword,
+        viewModel = loginViewModel
+    )
+}
+
+@Composable
+fun LoginScreenContent(
+    onNavigateToCadastro: () -> Unit,
+    onNavigateToForgotPassword: () -> Unit,
+    viewModel: LoginViewModel
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -59,7 +93,6 @@ fun LoginScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // 1. Logo
         Icon(
             imageVector = Icons.Filled.BusinessCenter,
             contentDescription = "Logo Ferraz Conecta",
@@ -68,14 +101,12 @@ fun LoginScreen(
         )
         Spacer(modifier = Modifier.height(32.dp))
 
-        // 2. Título
         Text(text = "Login", style = MaterialTheme.typography.headlineLarge)
         Spacer(modifier = Modifier.height(24.dp))
 
-        // 3. E-mail
         OutlinedTextField(
-            value = loginViewModel.email,
-            onValueChange = { loginViewModel.onEmailChange(it) },
+            value = viewModel.email,
+            onValueChange = viewModel::onEmailChange,
             label = { Text("E-mail") },
             modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
@@ -83,55 +114,48 @@ fun LoginScreen(
         )
         Spacer(modifier = Modifier.height(16.dp))
 
-        // 4. Senha
         OutlinedTextField(
-            value = loginViewModel.password,
-            onValueChange = { loginViewModel.onPasswordChange(it) },
+            value = viewModel.password,
+            onValueChange = viewModel::onPasswordChange,
             label = { Text("Senha") },
             modifier = Modifier.fillMaxWidth(),
-            visualTransformation = if (loginViewModel.passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            visualTransformation = if (viewModel.passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             singleLine = true,
             trailingIcon = {
-                val image = if (loginViewModel.passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
-                val description = if (loginViewModel.passwordVisible) "Ocultar senha" else "Mostrar senha"
-                IconButton(onClick = { loginViewModel.togglePasswordVisibility() }) {
+                val image = if (viewModel.passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
+                val description = if (viewModel.passwordVisible) "Ocultar senha" else "Mostrar senha"
+                IconButton(onClick = viewModel::togglePasswordVisibility) {
                     Icon(imageVector = image, description)
                 }
             }
         )
         Spacer(modifier = Modifier.height(8.dp))
 
-        // 5. Esqueci minha senha
         TextButton(
-            onClick = { /* FAZER */ },
+            onClick = onNavigateToForgotPassword,
             modifier = Modifier.align(Alignment.End)
         ) {
             Text("Esqueci minha senha?")
         }
         Spacer(modifier = Modifier.height(24.dp))
 
-        // 6. Botão Entrar
         Button(
-            onClick = { loginViewModel.onLoginClick() }, // Chama a função de login
+            onClick = viewModel::onLoginClick,
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Entrar")
         }
         Spacer(modifier = Modifier.height(24.dp))
 
-        // 7. Separador
         Text("ou entre com")
         Spacer(modifier = Modifier.height(24.dp))
 
-        // 8. Login Social
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Center
         ) {
-            OutlinedButton(
-                onClick = { /* FAZER */ },
-            ) {
+            OutlinedButton(onClick = viewModel::onSignInWithGoogleClick) {
                 Icon(
                     imageVector = Icons.Filled.AccountCircle, 
                     contentDescription = "Login com Google",
@@ -139,9 +163,7 @@ fun LoginScreen(
                 )
             }
             Spacer(modifier = Modifier.width(16.dp))
-            OutlinedButton(
-                onClick = { /* FAZER */ },
-            ) {
+            OutlinedButton(onClick = viewModel::onSignInWithLinkedInClick) {
                 Icon(
                     imageVector = Icons.Filled.AccountCircle,
                     contentDescription = "Login com LinkedIn",
@@ -151,7 +173,6 @@ fun LoginScreen(
         }
         Spacer(modifier = Modifier.weight(1f))
 
-        // 9. Link para Cadastro
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text("Não possui conta? ")
             TextButton(onClick = onNavigateToCadastro) {
@@ -165,6 +186,10 @@ fun LoginScreen(
 @Composable
 fun LoginScreenPreview() {
     FerrazConectaAppTheme {
-        LoginScreen(onNavigateToCadastro = {}, onLoginSuccess = {})
+        LoginScreenContent(
+            onNavigateToCadastro = {},
+            onNavigateToForgotPassword = {},
+            viewModel = LoginViewModel()
+        )
     }
 }

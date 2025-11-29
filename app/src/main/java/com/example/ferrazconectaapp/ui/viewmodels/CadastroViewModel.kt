@@ -5,115 +5,145 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.ferrazconectaapp.data.repository.AuthRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
-class CadastroViewModel : ViewModel() {
+sealed interface CadastroUiState {
+    object Idle : CadastroUiState
+    object Success : CadastroUiState
+    data class Error(val message: String) : CadastroUiState
+}
 
-    // Estado dos campos do formulário
-    var nome by mutableStateOf("")
+data class FormFieldState(val value: String = "", var error: String? = null)
+
+@HiltViewModel
+class CadastroViewModel @Inject constructor(
+    private val authRepository: AuthRepository
+) : ViewModel() {
+
+    var nome by mutableStateOf(FormFieldState())
         private set
-    var email by mutableStateOf("")
+    var email by mutableStateOf(FormFieldState())
         private set
-    var cpf by mutableStateOf("")
+    var cpf by mutableStateOf(FormFieldState())
         private set
-    var dataNascimento by mutableStateOf("")
+    var dataNascimento by mutableStateOf(FormFieldState())
         private set
-    var telefone by mutableStateOf("")
+    var telefone by mutableStateOf(FormFieldState())
         private set
-    var senha by mutableStateOf("")
+    var senha by mutableStateOf(FormFieldState())
         private set
-    var confirmarSenha by mutableStateOf("")
+    var confirmarSenha by mutableStateOf(FormFieldState())
         private set
 
-    // Estado de erro de validação
-    var emailError by mutableStateOf<String?>(null)
-        private set
-    var confirmarSenhaError by mutableStateOf<String?>(null)
-        private set
+    private val _uiState = MutableStateFlow<CadastroUiState>(CadastroUiState.Idle)
+    val uiState = _uiState.asStateFlow()
 
-    // Estado de validade geral do formulário
-    var isFormValid by mutableStateOf(false)
-        private set
-
-    private val _cadastroSuccess = MutableStateFlow(false)
-    val cadastroSuccess = _cadastroSuccess.asStateFlow()
-
-    fun onNomeChange(newName: String) {
-        nome = newName
-        validateForm()
+    fun onNomeChange(newValue: String) {
+        nome = nome.copy(value = newValue)
     }
 
-    fun onEmailChange(newEmail: String) {
-        email = newEmail
-        validateEmail()
-        validateForm()
+    fun onEmailChange(newValue: String) {
+        email = email.copy(value = newValue)
     }
 
-    fun onCpfChange(newCpf: String) {
-        if (newCpf.length <= 11) {
-            cpf = newCpf.filter { it.isDigit() }
-            validateForm()
+    fun onCpfChange(newValue: String) {
+        if (newValue.length <= 11) {
+            cpf = cpf.copy(value = newValue.filter { it.isDigit() })
         }
     }
 
-    fun onDataNascimentoChange(newDate: String) {
-        if (newDate.length <= 8) {
-            dataNascimento = newDate.filter { it.isDigit() }
-            validateForm()
+    fun onDataNascimentoChange(newValue: String) {
+        if (newValue.length <= 8) {
+            dataNascimento = dataNascimento.copy(value = newValue.filter { it.isDigit() })
         }
     }
 
-    fun onTelefoneChange(newPhone: String) {
-        if (newPhone.length <= 11) {
-            telefone = newPhone.filter { it.isDigit() }
-            validateForm()
+    fun onTelefoneChange(newValue: String) {
+        if (newValue.length <= 11) {
+            telefone = telefone.copy(value = newValue.filter { it.isDigit() })
         }
     }
 
-    fun onSenhaChange(newPassword: String) {
-        senha = newPassword
+    fun onSenhaChange(newValue: String) {
+        senha = senha.copy(value = newValue)
         validatePasswordConfirmation()
-        validateForm()
     }
 
-    fun onConfirmarSenhaChange(newPassword: String) {
-        confirmarSenha = newPassword
+    fun onConfirmarSenhaChange(newValue: String) {
+        confirmarSenha = confirmarSenha.copy(value = newValue)
         validatePasswordConfirmation()
-        validateForm()
     }
 
-    private fun validateEmail() {
-        emailError = if (email.isNotBlank() && !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            "Formato de e-mail inválido"
-        } else {
-            null
+    fun validateNome() {
+        nome = nome.copy(error = if (nome.value.isBlank()) "Nome não pode estar em branco" else null)
+    }
+
+    fun validateEmail() {
+        val error = when {
+            email.value.isBlank() -> "E-mail não pode estar em branco"
+            !Patterns.EMAIL_ADDRESS.matcher(email.value).matches() -> "Formato de e-mail inválido"
+            else -> null
         }
+        email = email.copy(error = error)
+    }
+
+    fun validateCpf() {
+        cpf = cpf.copy(error = if (cpf.value.length != 11) "CPF deve ter 11 dígitos" else null)
+    }
+
+    fun validateDataNascimento() {
+        dataNascimento = dataNascimento.copy(error = if (dataNascimento.value.length != 8) "Data deve ter 8 dígitos" else null)
+    }
+
+    fun validateTelefone() {
+        telefone = telefone.copy(error = if (telefone.value.length < 10) "Telefone inválido" else null)
+    }
+
+    fun validateSenha() {
+        senha = senha.copy(error = if (senha.value.length < 6) "Senha deve ter no mínimo 6 caracteres" else null)
+        validatePasswordConfirmation()
     }
 
     private fun validatePasswordConfirmation() {
-        confirmarSenhaError = if (senha != confirmarSenha) {
-            "As senhas não coincidem"
-        } else {
-            null
-        }
+        val error = if (senha.value != confirmarSenha.value) "As senhas não coincidem" else null
+        confirmarSenha = confirmarSenha.copy(error = error)
     }
-
-    private fun validateForm() {
-        val isEmailFieldValid = email.isNotBlank() && emailError == null
-        val arePasswordsValid = senha.isNotBlank() && confirmarSenha.isNotBlank() && confirmarSenhaError == null
-        
-        isFormValid = nome.isNotBlank() && 
-                      cpf.length == 11 && 
-                      dataNascimento.length == 8 && 
-                      telefone.length == 11 && 
-                      isEmailFieldValid && 
-                      arePasswordsValid
-    }
-
+    
     fun onCadastroClick() {
-        if(isFormValid) {
-            _cadastroSuccess.value = true
+        validateAllFields()
+        if (isFormValid()) {
+            viewModelScope.launch {
+                authRepository.register(email.value, senha.value)
+                _uiState.value = CadastroUiState.Success
+            }
+        } else {
+            _uiState.value = CadastroUiState.Error("Por favor, corrija os erros no formulário.")
         }
+    }
+
+    private fun validateAllFields() {
+        validateNome()
+        validateEmail()
+        validateCpf()
+        validateDataNascimento()
+        validateTelefone()
+        validateSenha()
+        validatePasswordConfirmation()
+    }
+
+    private fun isFormValid(): Boolean {
+        return nome.error == null && email.error == null && cpf.error == null && 
+               dataNascimento.error == null && telefone.error == null && 
+               senha.error == null && confirmarSenha.error == null
+    }
+
+    fun resetUiState() {
+        _uiState.value = CadastroUiState.Idle
     }
 }
