@@ -20,7 +20,10 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -33,13 +36,13 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -52,7 +55,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.example.ferrazconectaapp.MyApplication
 import com.example.ferrazconectaapp.data.model.Vaga
 import com.example.ferrazconectaapp.ui.components.VagaListItem
 import com.example.ferrazconectaapp.ui.nav.Routes
@@ -234,6 +236,9 @@ fun FilterBottomSheet(
 ) {
     val sheetState = rememberModalBottomSheetState()
     var localizacao by remember { mutableStateOf(initialFilters.localizacao ?: "") }
+    var nivelExperiencia by remember { mutableStateOf(initialFilters.nivelExperiencia ?: "") }
+    var tipoContrato by remember { mutableStateOf(initialFilters.tipoContrato ?: "") }
+    var areaAtuacao by remember { mutableStateOf(initialFilters.areaAtuacao ?: "") }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -254,18 +259,100 @@ fun FilterBottomSheet(
                 label = { Text("Localização") },
                 modifier = Modifier.fillMaxWidth()
             )
-            
-            // TODO: Adicionar outros campos de filtro (nível de experiência, etc.)
+            Spacer(modifier = Modifier.height(16.dp))
+
+            FilterDropdown(
+                label = "Nível de Experiência",
+                options = listOf("Com Experiência", "Sem Experiência"),
+                selectedOption = nivelExperiencia,
+                onOptionSelected = { nivelExperiencia = it }
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+
+            FilterDropdown(
+                label = "Tipo de Contrato",
+                options = listOf("CLT", "PJ", "Temporário", "Estágio"),
+                selectedOption = tipoContrato,
+                onOptionSelected = { tipoContrato = it }
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+
+            FilterDropdown(
+                label = "Área de Atuação",
+                options = listOf("Administrativo", "Educação", "Saúde", "Tecnologia", "Serviços Gerais"),
+                selectedOption = areaAtuacao,
+                onOptionSelected = { areaAtuacao = it }
+            )
             
             Spacer(modifier = Modifier.height(24.dp))
             
             Button(
                 onClick = { 
-                    onApplyFilters(FilterState(localizacao = localizacao))
+                    onApplyFilters(
+                        FilterState(
+                            localizacao = localizacao.ifBlank { null },
+                            nivelExperiencia = nivelExperiencia.ifBlank { null },
+                            tipoContrato = tipoContrato.ifBlank { null },
+                            areaAtuacao = areaAtuacao.ifBlank { null }
+                        )
+                    )
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Aplicar Filtros")
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            TextButton(
+                onClick = {
+                    localizacao = ""
+                    nivelExperiencia = ""
+                    tipoContrato = ""
+                    areaAtuacao = ""
+                    onApplyFilters(FilterState()) // Aplica o filtro vazio e fecha o painel
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Limpar Filtros")
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun FilterDropdown(
+    label: String,
+    options: List<String>,
+    selectedOption: String,
+    onOptionSelected: (String) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = !expanded },
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        OutlinedTextField(
+            value = selectedOption,
+            onValueChange = {}, // Não permite edição direta
+            readOnly = true,
+            label = { Text(label) },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            modifier = Modifier.menuAnchor().fillMaxWidth()
+        )
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            options.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(option) },
+                    onClick = {
+                        onOptionSelected(option)
+                        expanded = false
+                    }
+                )
             }
         }
     }
@@ -275,7 +362,7 @@ fun FilterBottomSheet(
 @Preview(showBackground = true, name = "Estado com Vagas")
 @Composable
 fun HomeScreenSuccessPreview() {
-    val vaga = Vaga(id = 1, titulo = "Desenvolvedor Android", empresa = "Google", descricao = "", local = "SP")
+    val vaga = Vaga(id = 1, titulo = "Desenvolvedor Android", empresa = "Google", descricao = "", local = "SP", nivel = "Com Experiência", contrato = "CLT", area = "Tecnologia")
     FerrazConectaAppTheme {
         HomeScreenContent(
             navController = rememberNavController(),
@@ -337,7 +424,7 @@ fun FilterBottomSheetPreview() {
         FilterBottomSheet(
             onDismiss = {},
             onApplyFilters = {},
-            initialFilters = FilterState(localizacao = "Ferraz")
+            initialFilters = FilterState(localizacao = "Ferraz", nivelExperiencia = "Com Experiência", tipoContrato = "CLT", areaAtuacao = "Tecnologia")
         )
     }
 }

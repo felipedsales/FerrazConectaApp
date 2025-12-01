@@ -30,6 +30,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "ferraz_conecta_database"
                 )
+                .fallbackToDestructiveMigration() // Adicionado para evitar crashes em migrações
                 .addCallback(AppDatabaseCallback())
                 .build()
                 INSTANCE = instance
@@ -52,11 +53,12 @@ abstract class AppDatabase : RoomDatabase() {
 
         private fun getInitialVagas(): List<Vaga> {
             return listOf(
-                Vaga(titulo = "Desenvolvedor Android Pleno", empresa = "Secretaria de Tecnologia", descricao = "Desenvolvimento e manutenção de aplicativos para a prefeitura.", local = "Ferraz de Vasconcelos, SP"),
-                Vaga(titulo = "Analista de Sistemas", empresa = "Secretaria de Planejamento", descricao = "Análise e levantamento de requisitos para novos sistemas.", local = "Ferraz de Vasconcelos, SP"),
-                Vaga(titulo = "Agente Administrativo", empresa = "Secretaria de Administração", descricao = "Rotinas administrativas, atendimento ao público e organização de documentos.", local = "Ferraz de Vasconcelos, SP"),
-                Vaga(titulo = "Professor de Educação Infantil", empresa = "Secretaria de Educação", descricao = "Lecionar para turmas de educação infantil, cuidando do desenvolvimento e bem-estar das crianças.", local = "Ferraz de Vasconcelos, SP"),
-                Vaga(titulo = "Técnico de Enfermagem", empresa = "Secretaria de Saúde", descricao = "Prestar assistência de enfermagem aos pacientes na rede municipal de saúde.", local = "Ferraz de Vasconcelos, SP")
+                Vaga(titulo = "Desenvolvedor Android Pleno", empresa = "Secretaria de Tecnologia", descricao = "Desenvolvimento e manutenção de aplicativos para a prefeitura.", local = "Ferraz de Vasconcelos, SP", nivel = "Com Experiência", contrato = "PJ", area = "Tecnologia"),
+                Vaga(titulo = "Analista de Sistemas", empresa = "Secretaria de Planejamento", descricao = "Análise e levantamento de requisitos para novos sistemas.", local = "Ferraz de Vasconcelos, SP", nivel = "Com Experiência", contrato = "CLT", area = "Tecnologia"),
+                Vaga(titulo = "Agente Administrativo", empresa = "Secretaria de Administração", descricao = "Rotinas administrativas, atendimento ao público e organização de documentos.", local = "Ferraz de Vasconcelos, SP", nivel = "Sem Experiência", contrato = "CLT", area = "Administrativo"),
+                Vaga(titulo = "Professor de Educação Infantil", empresa = "Secretaria de Educação", descricao = "Lecionar para turmas de educação infantil, cuidando do desenvolvimento e bem-estar das crianças.", local = "Ferraz de Vasconcelos, SP", nivel = "Com Experiência", contrato = "CLT", area = "Educação"),
+                Vaga(titulo = "Técnico de Enfermagem", empresa = "Secretaria de Saúde", descricao = "Prestar assistência de enfermagem aos pacientes na rede municipal de saúde.", local = "Ferraz de Vasconcelos, SP", nivel = "Sem Experiência", contrato = "Temporário", area = "Saúde"),
+                Vaga(titulo = "Auxiliar de Serviços Gerais", empresa = "Secretaria de Obras", descricao = "Limpeza e manutenção das instalações da prefeitura.", local = "Ferraz de Vasconcelos, SP", nivel = "Sem Experiência", contrato = "CLT", area = "Serviços Gerais")
             )
         }
     }

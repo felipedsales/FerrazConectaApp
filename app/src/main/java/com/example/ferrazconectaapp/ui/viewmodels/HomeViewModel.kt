@@ -24,7 +24,9 @@ sealed interface HomeUiState {
 // Data class para o estado dos filtros
 data class FilterState(
     val localizacao: String? = null,
-    val nivelExperiencia: String? = null
+    val nivelExperiencia: String? = null,
+    val tipoContrato: String? = null,
+    val areaAtuacao: String? = null
 )
 
 @OptIn(FlowPreview::class)
@@ -45,21 +47,28 @@ class HomeViewModel @Inject constructor(
 
     // Combina a busca (com debounce), os filtros e as vagas do repositório
     val uiState: StateFlow<HomeUiState> = combine(
-        _searchQuery.debounce(500), // <-- A mágica do Debounce!
+        _searchQuery.debounce(500), // Debounce para a busca por texto
         _filters,
         vagaRepository.getVagas()
     ) { query, filters, vagas ->
         val filteredList = vagas.filter { vaga ->
-            val matchesQuery = query.isBlank() || 
-                               vaga.titulo.contains(query, ignoreCase = true) || 
+            val matchesQuery = query.isBlank() ||
+                               vaga.titulo.contains(query, ignoreCase = true) ||
                                vaga.empresa.contains(query, ignoreCase = true)
-            
-            val matchesLocation = filters.localizacao.isNullOrBlank() || 
+
+            val matchesLocation = filters.localizacao.isNullOrBlank() ||
                                   vaga.local.contains(filters.localizacao, ignoreCase = true)
 
-            // TODO: Adicionar lógica para o filtro de nível de experiência
+            val matchesNivel = filters.nivelExperiencia.isNullOrBlank() ||
+                               vaga.nivel.equals(filters.nivelExperiencia, ignoreCase = true)
 
-            matchesQuery && matchesLocation
+            val matchesContrato = filters.tipoContrato.isNullOrBlank() ||
+                                  vaga.contrato.equals(filters.tipoContrato, ignoreCase = true)
+
+            val matchesArea = filters.areaAtuacao.isNullOrBlank() ||
+                              vaga.area.equals(filters.areaAtuacao, ignoreCase = true)
+
+            matchesQuery && matchesLocation && matchesNivel && matchesContrato && matchesArea
         }
         HomeUiState.Success(filteredList)
     }.stateIn(

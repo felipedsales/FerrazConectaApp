@@ -10,5 +10,8 @@ data class Vaga(
     val titulo: String,
     val empresa: String,
     val descricao: String,
-    val local: String
+    val local: String,
+    val nivel: String = "",
+    val contrato: String = "",
+    val area: String = ""
 )
