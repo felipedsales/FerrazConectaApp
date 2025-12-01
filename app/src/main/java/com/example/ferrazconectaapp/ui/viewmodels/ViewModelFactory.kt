@@ -7,6 +7,7 @@ import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.example.ferrazconectaapp.data.repository.AuthRepository
 import com.example.ferrazconectaapp.data.repository.CandidaturaRepository
+import com.example.ferrazconectaapp.data.repository.UserRepository
 import com.example.ferrazconectaapp.data.repository.VagaRepository
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
@@ -19,6 +20,7 @@ interface ViewModelFactoryEntryPoint {
     fun vagaRepository(): VagaRepository
     fun candidaturaRepository(): CandidaturaRepository
     fun authRepository(): AuthRepository
+    fun userRepository(): UserRepository
 }
 
 object AppViewModelProvider {
@@ -50,10 +52,22 @@ object AppViewModelProvider {
                     CadastroViewModel(entryPoint.authRepository()) as T
                 }
                 modelClass.isAssignableFrom(ProfileViewModel::class.java) -> {
-                    ProfileViewModel() as T
+                    ProfileViewModel(entryPoint.authRepository(), entryPoint.userRepository()) as T
                 }
                 modelClass.isAssignableFrom(LoginViewModel::class.java) -> {
                     LoginViewModel(entryPoint.authRepository()) as T
+                }
+                modelClass.isAssignableFrom(FormEscolaridadeViewModel::class.java) -> {
+                    FormEscolaridadeViewModel(
+                        userRepository = entryPoint.userRepository(),
+                        savedStateHandle = extras.createSavedStateHandle()
+                    ) as T
+                }
+                modelClass.isAssignableFrom(FormExperienciaViewModel::class.java) -> {
+                    FormExperienciaViewModel(
+                        userRepository = entryPoint.userRepository(),
+                        savedStateHandle = extras.createSavedStateHandle()
+                    ) as T
                 }
                 else -> throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
             }

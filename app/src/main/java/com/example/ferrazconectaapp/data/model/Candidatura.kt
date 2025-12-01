@@ -20,5 +20,6 @@ import androidx.room.PrimaryKey
 data class Candidatura(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
-    val vagaId: Int
+    val vagaId: Int,
+    val status: String = "Enviada"
 )

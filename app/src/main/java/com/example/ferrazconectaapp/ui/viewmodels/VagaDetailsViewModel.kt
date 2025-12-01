@@ -41,7 +41,7 @@ class VagaDetailsViewModel @Inject constructor(
                 if (vaga == null) {
                     _uiState.value = VagaDetailsUiState.Error
                 } else {
-                    val isCandidatado = candidaturas.any { it.id == vaga.id }
+                    val isCandidatado = candidaturas.any { it.vaga.id == vaga.id }
                     _uiState.value = VagaDetailsUiState.Success(vaga, isCandidatado)
                 }
             }.launchIn(viewModelScope)

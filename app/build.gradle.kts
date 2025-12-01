@@ -85,6 +85,7 @@ dependencies {
     // Firebase
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth.ktx)
+    implementation("com.google.firebase:firebase-firestore-ktx")
     implementation(libs.play.services.auth)
 
     // Test dependencies

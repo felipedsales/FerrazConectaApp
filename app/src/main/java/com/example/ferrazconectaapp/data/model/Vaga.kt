@@ -1,5 +1,6 @@
 package com.example.ferrazconectaapp.data.model
 
+import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
@@ -14,4 +15,12 @@ data class Vaga(
     val nivel: String = "",
     val contrato: String = "",
     val area: String = ""
+)
+
+// Classe de dados para combinar os resultados da consulta JOIN
+data class VagaComStatus(
+    @Embedded
+    val vaga: Vaga,
+    val status: String,
+    val candidaturaId: Int
 )

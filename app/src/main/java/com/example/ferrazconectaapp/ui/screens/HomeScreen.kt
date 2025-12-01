@@ -73,12 +73,12 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel = hilt
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val showSnackbar by navBackStackEntry?.savedStateHandle?.getLiveData<Boolean>("show_snackbar")
-        ?.observeAsState(initial = false) ?: remember { mutableStateOf(false) }
+        ?.observeAsState() ?: remember { mutableStateOf(false) }
 
     LaunchedEffect(showSnackbar) {
-        if (showSnackbar) {
+        if (showSnackbar == true) {
             snackbarHostState.showSnackbar("Candidatura realizada com sucesso!")
-            navBackStackEntry?.savedStateHandle?.remove<Boolean>("show_snackbar")
+            navBackStackEntry?.savedStateHandle?.set("show_snackbar", false)
         }
     }
 

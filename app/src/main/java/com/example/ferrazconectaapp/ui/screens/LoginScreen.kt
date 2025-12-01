@@ -188,7 +188,10 @@ fun LoginScreenContent(
 @Composable
 fun LoginScreenPreview() {
     FerrazConectaAppTheme {
-        val fakeAuthRepository = AuthRepository(FirebaseModule.provideFirebaseAuth())
+        val fakeAuthRepository = AuthRepository(
+            FirebaseModule.provideFirebaseAuth(),
+            FirebaseModule.provideFirestore()
+        )
         LoginScreenContent(
             onNavigateToCadastro = {},
             onNavigateToForgotPassword = {},

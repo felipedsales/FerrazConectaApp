@@ -283,7 +283,10 @@ fun CadastroScreenPreview() {
     FerrazConectaAppTheme {
         // This preview will not work correctly with the new Hilt and Google Sign-In logic.
         // It requires a more complex setup to mock these dependencies.
-        val fakeAuth = AuthRepository(FirebaseModule.provideFirebaseAuth())
+        val fakeAuth = AuthRepository(
+            FirebaseModule.provideFirebaseAuth(),
+            FirebaseModule.provideFirestore()
+        )
         CadastroScreenContent(
             onNavigateBack = {},
             viewModel = CadastroViewModel(fakeAuth),

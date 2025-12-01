@@ -13,17 +13,25 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.WorkOff
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
@@ -33,19 +41,35 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.ferrazconectaapp.data.model.Vaga
+import com.example.ferrazconectaapp.data.model.VagaComStatus
 import com.example.ferrazconectaapp.ui.components.VagaListItem
 import com.example.ferrazconectaapp.ui.nav.Routes
 import com.example.ferrazconectaapp.ui.theme.FerrazConectaAppTheme
+import com.example.ferrazconectaapp.ui.viewmodels.CandidaturaEvent
 import com.example.ferrazconectaapp.ui.viewmodels.CandidaturasUiState
 import com.example.ferrazconectaapp.ui.viewmodels.CandidaturasViewModel
+import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun CandidaturasScreen(navController: NavController, candidaturasViewModel: CandidaturasViewModel = hiltViewModel()) {
     val uiState by candidaturasViewModel.uiState.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(key1 = true) {
+        candidaturasViewModel.eventFlow.collectLatest { event ->
+            when (event) {
+                is CandidaturaEvent.DesistenciaSuccess -> {
+                    snackbarHostState.showSnackbar(event.message)
+                }
+            }
+        }
+    }
 
     CandidaturasScreenContent(
         navController = navController,
-        uiState = uiState
+        uiState = uiState,
+        snackbarHostState = snackbarHostState,
+        onDesistirClick = candidaturasViewModel::desistirCandidatura
     )
 }
 
@@ -53,9 +77,37 @@ fun CandidaturasScreen(navController: NavController, candidaturasViewModel: Cand
 @Composable
 fun CandidaturasScreenContent(
     navController: NavController,
-    uiState: CandidaturasUiState
+    uiState: CandidaturasUiState,
+    snackbarHostState: SnackbarHostState,
+    onDesistirClick: (VagaComStatus) -> Unit
 ) {
+    val (vagaParaDesistir, setVagaParaDesistir) = remember { mutableStateOf<VagaComStatus?>(null) }
+
+    vagaParaDesistir?.let { vaga ->
+        AlertDialog(
+            onDismissRequest = { setVagaParaDesistir(null) },
+            title = { Text("Confirmar Desistência") },
+            text = { Text("Você tem certeza que deseja desistir da vaga de ${vaga.vaga.titulo}?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onDesistirClick(vaga)
+                        setVagaParaDesistir(null)
+                    }
+                ) {
+                    Text("Sim, desistir")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { setVagaParaDesistir(null) }) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
+
     Scaffold(
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text("Minhas Candidaturas") },
@@ -82,8 +134,13 @@ fun CandidaturasScreenContent(
                 }
                 is CandidaturasUiState.Success -> {
                     LazyColumn(modifier = Modifier.fillMaxSize()) {
-                        items(uiState.vagas) { vaga ->
-                            VagaListItem(vaga = vaga, onClick = { navController.navigate(Routes.createVagaDetailsRoute(vaga.id)) })
+                        items(uiState.vagasComStatus) { vagaComStatus ->
+                            VagaListItem(
+                                vaga = vagaComStatus.vaga,
+                                onClick = { navController.navigate(Routes.createVagaDetailsRoute(vagaComStatus.vaga.id)) },
+                                status = vagaComStatus.status,
+                                onDesistirClick = { setVagaParaDesistir(vagaComStatus) }
+                            )
                         }
                     }
                 }
@@ -123,10 +180,13 @@ fun CandidaturasScreenSuccessPreview() {
         descricao = "Descrição da vaga.",
         local = "São Paulo, SP"
     )
+    val vagaComStatus = VagaComStatus(vaga = vaga, status = "Enviada", candidaturaId = 1)
     FerrazConectaAppTheme {
         CandidaturasScreenContent(
             navController = rememberNavController(),
-            uiState = CandidaturasUiState.Success(listOf(vaga, vaga, vaga))
+            uiState = CandidaturasUiState.Success(listOf(vagaComStatus, vagaComStatus)),
+            snackbarHostState = remember { SnackbarHostState() },
+            onDesistirClick = {}
         )
     }
 }
@@ -137,7 +197,9 @@ fun CandidaturasScreenEmptyPreview() {
     FerrazConectaAppTheme {
         CandidaturasScreenContent(
             navController = rememberNavController(),
-            uiState = CandidaturasUiState.Empty
+            uiState = CandidaturasUiState.Empty,
+            snackbarHostState = remember { SnackbarHostState() },
+            onDesistirClick = {}
         )
     }
 }
@@ -148,7 +210,9 @@ fun CandidaturasScreenLoadingPreview() {
     FerrazConectaAppTheme {
         CandidaturasScreenContent(
             navController = rememberNavController(),
-            uiState = CandidaturasUiState.Loading
+            uiState = CandidaturasUiState.Loading,
+            snackbarHostState = remember { SnackbarHostState() },
+            onDesistirClick = {}
         )
     }
 }

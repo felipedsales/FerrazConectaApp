@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.ferrazconectaapp.data.model.User
 import com.example.ferrazconectaapp.data.repository.AuthRepository
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
@@ -118,13 +119,22 @@ class CadastroViewModel @Inject constructor(
         val error = if (senha.value != confirmarSenha.value) "As senhas não coincidem" else null
         confirmarSenha = confirmarSenha.copy(error = error)
     }
-    
+
     fun onCadastroClick() {
         validateAllFields()
         if (isFormValid()) {
             viewModelScope.launch {
                 try {
-                    authRepository.register(email.value, senha.value)
+                    val uid = authRepository.register(email.value, senha.value)
+                    val newUser = User(
+                        uid = uid,
+                        nome = nome.value,
+                        email = email.value,
+                        cpf = cpf.value,
+                        dataNascimento = dataNascimento.value,
+                        telefone = telefone.value
+                    )
+                    authRepository.createUser(newUser)
                     _uiState.value = CadastroUiState.Success
                 } catch (e: FirebaseAuthUserCollisionException) {
                     _uiState.value = CadastroUiState.Error("Este e-mail já está em uso.")
@@ -140,7 +150,7 @@ class CadastroViewModel @Inject constructor(
             _uiState.value = CadastroUiState.Error("Por favor, corrija os erros no formulário.")
         }
     }
-    
+
     fun signInWithGoogleToken(idToken: String) {
         viewModelScope.launch {
             try {
@@ -164,8 +174,8 @@ class CadastroViewModel @Inject constructor(
     }
 
     private fun isFormValid(): Boolean {
-        return nome.error == null && email.error == null && cpf.error == null && 
-               dataNascimento.error == null && telefone.error == null && 
+        return nome.error == null && email.error == null && cpf.error == null &&
+               dataNascimento.error == null && telefone.error == null &&
                senha.error == null && confirmarSenha.error == null
     }
 

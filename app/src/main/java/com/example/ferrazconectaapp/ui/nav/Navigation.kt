@@ -8,6 +8,8 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.ferrazconectaapp.ui.screens.CadastroScreen
 import com.example.ferrazconectaapp.ui.screens.CandidaturasScreen
+import com.example.ferrazconectaapp.ui.screens.FormEscolaridadeScreen
+import com.example.ferrazconectaapp.ui.screens.FormExperienciaScreen
 import com.example.ferrazconectaapp.ui.screens.ForgotPasswordScreen
 import com.example.ferrazconectaapp.ui.screens.HomeScreen
 import com.example.ferrazconectaapp.ui.screens.LoginScreen
@@ -22,8 +24,16 @@ object Routes {
     const val CANDIDATURAS = "candidaturas"
     const val FORGOT_PASSWORD = "forgot_password"
     const val VAGA_DETAILS = "vaga_details/{vagaId}"
+    
+    const val FORM_ESCOLARIDADE = "form_escolaridade?escolaridadeId={escolaridadeId}"
+    const val FORM_EXPERIENCIA = "form_experiencia?experienciaId={experienciaId}"
 
     fun createVagaDetailsRoute(vagaId: Int) = "vaga_details/$vagaId"
+    fun createFormEscolaridadeRoute(escolaridadeId: String? = null) = 
+        escolaridadeId?.let { "form_escolaridade?escolaridadeId=$it" } ?: "form_escolaridade"
+
+    fun createFormExperienciaRoute(experienciaId: String? = null) = 
+        experienciaId?.let { "form_experiencia?experienciaId=$it" } ?: "form_experiencia"
 }
 
 @Composable
@@ -65,6 +75,24 @@ fun AppNavigation() {
             arguments = listOf(navArgument("vagaId") { type = NavType.IntType })
         ) {
             VagaDetailsScreen(navController = navController)
+        }
+        composable(
+            route = Routes.FORM_ESCOLARIDADE,
+            arguments = listOf(navArgument("escolaridadeId") { 
+                type = NavType.StringType
+                nullable = true 
+            })
+        ) {
+            FormEscolaridadeScreen(navController = navController)
+        }
+        composable(
+            route = Routes.FORM_EXPERIENCIA,
+            arguments = listOf(navArgument("experienciaId") { 
+                type = NavType.StringType
+                nullable = true 
+            })
+        ) {
+            FormExperienciaScreen(navController = navController)
         }
     }
 }
