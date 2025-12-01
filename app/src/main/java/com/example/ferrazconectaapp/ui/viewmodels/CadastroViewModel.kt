@@ -7,6 +7,10 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.ferrazconectaapp.data.repository.AuthRepository
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.firebase.auth.FirebaseAuthUserCollisionException
+import com.google.firebase.auth.FirebaseAuthWeakPasswordException
+import com.google.firebase.auth.GoogleAuthProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -119,11 +123,33 @@ class CadastroViewModel @Inject constructor(
         validateAllFields()
         if (isFormValid()) {
             viewModelScope.launch {
-                authRepository.register(email.value, senha.value)
-                _uiState.value = CadastroUiState.Success
+                try {
+                    authRepository.register(email.value, senha.value)
+                    _uiState.value = CadastroUiState.Success
+                } catch (e: FirebaseAuthUserCollisionException) {
+                    _uiState.value = CadastroUiState.Error("Este e-mail já está em uso.")
+                } catch (e: FirebaseAuthWeakPasswordException) {
+                    _uiState.value = CadastroUiState.Error("A senha é muito fraca. A senha deve ter no mínimo 6 caracteres.")
+                } catch (e: FirebaseAuthInvalidCredentialsException) {
+                    _uiState.value = CadastroUiState.Error("O formato do e-mail é inválido.")
+                } catch (e: Exception) {
+                    _uiState.value = CadastroUiState.Error(e.message ?: "Ocorreu um erro durante o cadastro.")
+                }
             }
         } else {
             _uiState.value = CadastroUiState.Error("Por favor, corrija os erros no formulário.")
+        }
+    }
+    
+    fun signInWithGoogleToken(idToken: String) {
+        viewModelScope.launch {
+            try {
+                val credential = GoogleAuthProvider.getCredential(idToken, null)
+                authRepository.firebaseSignInWithGoogle(credential)
+                _uiState.value = CadastroUiState.Success
+            } catch (e: Exception) {
+                _uiState.value = CadastroUiState.Error(e.message ?: "Ocorreu um erro com o login.")
+            }
         }
     }
 

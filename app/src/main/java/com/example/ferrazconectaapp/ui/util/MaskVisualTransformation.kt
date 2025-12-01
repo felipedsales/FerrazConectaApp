@@ -66,35 +66,47 @@ class DateVisualTransformation : VisualTransformation {
     }
 }
 
-// Phone Mask: (##) #####-####
+// Phone Mask: (##) #####-#### or (##) ####-####
 class PhoneVisualTransformation : VisualTransformation {
     override fun filter(text: AnnotatedString): TransformedText {
-        val trimmed = if (text.text.length >= 11) text.text.substring(0..10) else text.text
-        var out = ""
-        for (i in trimmed.indices) {
-            if (i == 0) out += "("
-            out += trimmed[i]
-            if (i == 1) out += ") "
-            if (i == 6) out += "-"
+        val digitsOnly = text.text.filter { it.isDigit() }
+        val isElevenDigits = digitsOnly.length == 11
+        val mask = if (isElevenDigits) "(##) #####-####" else "(##) ####-####"
+        val maskedText = buildString {
+            var digitIndex = 0
+            mask.forEach { maskChar ->
+                if (digitIndex < digitsOnly.length) {
+                    if (maskChar == '#') {
+                        append(digitsOnly[digitIndex])
+                        digitIndex++
+                    } else {
+                        append(maskChar)
+                    }
+                }
+            }
         }
 
         val offsetMapping = object : OffsetMapping {
             override fun originalToTransformed(offset: Int): Int {
-                if (offset <= 0) return offset
-                if (offset <= 1) return offset + 1
-                if (offset <= 6) return offset + 4
-                if (offset <= 11) return offset + 5
-                return 16
+                var transformedOffset = offset
+                if (offset > 0) transformedOffset += 1 // (
+                if (offset > 1) transformedOffset += 2 // )_
+                if (offset > (if (isElevenDigits) 6 else 5)) transformedOffset += 1 // -
+                return minOf(transformedOffset, maskedText.length)
             }
 
             override fun transformedToOriginal(offset: Int): Int {
-                if (offset <= 0) return offset
-                if (offset <= 2) return offset - 1
-                if (offset <= 8) return offset - 4
-                if (offset <= 14) return offset - 5
-                return 11
+                var originalOffset = offset
+                if (offset > 1) originalOffset -= 1 // (
+                if (offset > 4) originalOffset -= 2 // )_
+                if (offset > (if (isElevenDigits) 10 else 9)) originalOffset -= 1 // -
+                return minOf(originalOffset, digitsOnly.length)
             }
         }
-        return TransformedText(AnnotatedString(out), offsetMapping)
+
+        return TransformedText(
+            AnnotatedString(maskedText),
+            offsetMapping
+        )
     }
 }

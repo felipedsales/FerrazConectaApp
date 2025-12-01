@@ -38,6 +38,8 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.ferrazconectaapp.data.repository.AuthRepository
+import com.example.ferrazconectaapp.di.FirebaseModule
 import com.example.ferrazconectaapp.ui.theme.FerrazConectaAppTheme
 import com.example.ferrazconectaapp.ui.viewmodels.LoginUiState
 import com.example.ferrazconectaapp.ui.viewmodels.LoginViewModel
@@ -186,10 +188,11 @@ fun LoginScreenContent(
 @Composable
 fun LoginScreenPreview() {
     FerrazConectaAppTheme {
+        val fakeAuthRepository = AuthRepository(FirebaseModule.provideFirebaseAuth())
         LoginScreenContent(
             onNavigateToCadastro = {},
             onNavigateToForgotPassword = {},
-            viewModel = LoginViewModel()
+            viewModel = LoginViewModel(fakeAuthRepository)
         )
     }
 }

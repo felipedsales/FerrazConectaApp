@@ -8,10 +8,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.example.ferrazconectaapp" />
+                  <option name="mobileSdkAppId" value="1:72456133753:android:ba43ac31a8758a71f188a8" />
+                  <option name="projectId" value="device-streaming-a9f85bcf" />
+                  <option name="projectNumber" value="72456133753" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

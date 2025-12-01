@@ -34,13 +34,18 @@ fun AppNavigation() {
         composable(Routes.LOGIN) {
             LoginScreen(
                 onNavigateToCadastro = { navController.navigate(Routes.CADASTRO) },
-                onLoginSuccess = { navController.navigate(Routes.HOME) },
+                onLoginSuccess = { 
+                    navController.navigate(Routes.HOME) {
+                        popUpTo(Routes.LOGIN) { inclusive = true }
+                    }
+                },
                 onNavigateToForgotPassword = { navController.navigate(Routes.FORGOT_PASSWORD) }
             )
         }
         composable(Routes.CADASTRO) {
             CadastroScreen(
-                onNavigateBack = { navController.popBackStack() }
+                onNavigateBack = { navController.popBackStack() },
+                onLoginSuccess = { navController.popBackStack() }
             )
         }
         composable(Routes.HOME) {

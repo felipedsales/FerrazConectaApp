@@ -1,7 +1,11 @@
 package com.example.ferrazconectaapp.ui.screens
 
+import android.app.Activity
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,10 +19,12 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.BusinessCenter
 import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -30,22 +36,29 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.ferrazconectaapp.R
 import com.example.ferrazconectaapp.data.repository.AuthRepository
+import com.example.ferrazconectaapp.di.FirebaseModule
 import com.example.ferrazconectaapp.ui.theme.FerrazConectaAppTheme
 import com.example.ferrazconectaapp.ui.util.CpfVisualTransformation
 import com.example.ferrazconectaapp.ui.util.DateVisualTransformation
 import com.example.ferrazconectaapp.ui.util.PhoneVisualTransformation
 import com.example.ferrazconectaapp.ui.viewmodels.CadastroUiState
 import com.example.ferrazconectaapp.ui.viewmodels.CadastroViewModel
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
 
 @Composable
 fun CadastroScreen(
     onNavigateBack: () -> Unit,
+    onLoginSuccess: () -> Unit,
     cadastroViewModel: CadastroViewModel = hiltViewModel()
 ) {
     val uiState by cadastroViewModel.uiState.collectAsState()
@@ -54,8 +67,8 @@ fun CadastroScreen(
     LaunchedEffect(uiState) {
         when (val state = uiState) {
             is CadastroUiState.Success -> {
-                Toast.makeText(context, "Cadastro realizado com sucesso!", Toast.LENGTH_SHORT).show()
-                onNavigateBack()
+                Toast.makeText(context, "Cadastro realizado com sucesso! Faça o login para continuar.", Toast.LENGTH_LONG).show()
+                onLoginSuccess()
                 cadastroViewModel.resetUiState()
             }
             is CadastroUiState.Error -> {
@@ -69,7 +82,10 @@ fun CadastroScreen(
     CadastroScreenContent(
         onNavigateBack = onNavigateBack,
         viewModel = cadastroViewModel,
-        onCadastroClick = { cadastroViewModel.onCadastroClick() }
+        onCadastroClick = { cadastroViewModel.onCadastroClick() },
+        onGoogleSignInClick = { idToken ->
+            cadastroViewModel.signInWithGoogleToken(idToken)
+        }
     )
 }
 
@@ -78,8 +94,37 @@ fun CadastroScreen(
 fun CadastroScreenContent(
     onNavigateBack: () -> Unit,
     viewModel: CadastroViewModel,
-    onCadastroClick: () -> Unit
+    onCadastroClick: () -> Unit,
+    onGoogleSignInClick: (String) -> Unit
 ) {
+    val context = LocalContext.current
+
+    // Configure Google Sign-In
+    val googleSignInOptions = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+        .requestIdToken(stringResource(id = R.string.default_web_client_id))
+        .requestEmail()
+        .build()
+    val googleSignInClient = GoogleSignIn.getClient(context, googleSignInOptions)
+
+    val googleSignInLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult(),
+        onResult = { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+                try {
+                    val account = task.getResult(ApiException::class.java)
+                    account?.idToken?.let {
+                        onGoogleSignInClick(it)
+                    } ?: run {
+                        Toast.makeText(context, "Falha ao obter o token do Google", Toast.LENGTH_SHORT).show()
+                    }
+                } catch (e: ApiException) {
+                    Toast.makeText(context, "Login com Google falhou: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    )
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -206,6 +251,27 @@ fun CadastroScreenContent(
             ) {
                 Text("Cadastrar")
             }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Divider(modifier = Modifier.weight(1f))
+                Text(" ou ", modifier = Modifier.padding(horizontal = 8.dp))
+                Divider(modifier = Modifier.weight(1f))
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            OutlinedButton(
+                onClick = { googleSignInLauncher.launch(googleSignInClient.signInIntent) },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Entrar com o Google")
+            }
+            
             Spacer(modifier = Modifier.weight(1f))
         }
     }
@@ -215,11 +281,14 @@ fun CadastroScreenContent(
 @Composable
 fun CadastroScreenPreview() {
     FerrazConectaAppTheme {
-        val fakeAuthRepository = AuthRepository()
+        // This preview will not work correctly with the new Hilt and Google Sign-In logic.
+        // It requires a more complex setup to mock these dependencies.
+        val fakeAuth = AuthRepository(FirebaseModule.provideFirebaseAuth())
         CadastroScreenContent(
             onNavigateBack = {},
-            viewModel = CadastroViewModel(fakeAuthRepository),
-            onCadastroClick = {}
+            viewModel = CadastroViewModel(fakeAuth),
+            onCadastroClick = {},
+            onGoogleSignInClick = {}
         )
     }
 }
