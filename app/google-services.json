@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "72456133753",
+    "project_id": "device-streaming-a9f85bcf",
+    "storage_bucket": "device-streaming-a9f85bcf.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:72456133753:android:ba43ac31a8758a71f188a8",
+        "android_client_info": {
+          "package_name": "com.example.ferrazconectaapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "72456133753-o71s0n8dc60sr0p54o3mg9h8d8jacugh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCnfetlnjXKat1KXI35mQgx9Flvdl2rU8w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "72456133753-o71s0n8dc60sr0p54o3mg9h8d8jacugh.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
